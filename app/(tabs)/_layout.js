@@ -20,12 +20,12 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="menu"
+        name="game"
         options={{
-          title: "Цэс",
+          title: "Тоглоом",
           tabBarIcon: ({ focused }) => (
             <Ionicons
-              name="menu"
+              name="game-controller-outline"
               size={24}
               color={focused ? color : "#363636"}
             />
