@@ -1,36 +1,33 @@
 import { Audio } from "expo-av";
-import { useEffect, useState } from "react";
+import { useNavigation } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 
-const Tile = ({ color, audioPath, pressing = false, onClick }) => {
-  const [isPressing, setIsPressing] = useState(false);
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
+const Tile = ({ color, audioPath, pressing = false, onClick }) => {
   useEffect(() => {
-    setIsPressing(pressing);
+    if (pressing) onPress();
   }, [pressing]);
 
   const onPress = async () => {
-    setIsPressing(true);
     const { sound } = await Audio.Sound.createAsync({
       uri: `https://www.musicca.com/lydfiler/piano/${audioPath}.mp3`,
     });
     await sound.playAsync();
-
-    setTimeout(() => {
-      setIsPressing(false);
-    }, 300);
   };
 
   return (
     <TouchableOpacity
-      activeOpacity={0.7}
+      activeOpacity={1}
       onPress={onPress}
       style={{
         width: "48%",
         height: "48%",
         backgroundColor: color,
         borderRadius: 10,
-        opacity: isPressing ? 1 : 0.7,
       }}
     >
       <Text> </Text>
@@ -39,6 +36,39 @@ const Tile = ({ color, audioPath, pressing = false, onClick }) => {
 };
 
 export default function Game() {
+  const navigation = useNavigation();
+  const [simon, setSimon] = useState([]);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingNote, setPlayingNote] = useState(undefined);
+  const interval = useRef(null);
+
+  useEffect(() => {
+    if (navigation.isFocused) {
+      const randomNumber = getRandomNumber(0, 3);
+      setSimon([randomNumber]);
+      setIsPlaying(true);
+    }
+  }, [navigation]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      let i = 0;
+      interval.current = setInterval(() => {
+        if (simon.length === i) {
+          setIsPlaying(false);
+          clearInterval(interval.current);
+        } else {
+          setPlayingNote(simon[i]);
+          i++;
+        }
+      }, 300);
+    }
+  }, [isPlaying]);
+
+  useEffect(() => {
+    console.log("playingNote: " + playingNote);
+  }, [playingNote]);
+
   return (
     <View
       style={{
@@ -51,10 +81,10 @@ export default function Game() {
         gap: 10,
       }}
     >
-      <Tile color="#a4df66" audioPath={"58"} />
-      <Tile color="#8b74d4" audioPath={"53"} />
-      <Tile color="#3d5a80" audioPath={"55"} />
-      <Tile color="#ffc7a2" audioPath={"56"} />
+      <Tile color="#a4df66" audioPath={"58"} pressing={playingNote === 0} />
+      <Tile color="#8b74d4" audioPath={"53"} pressing={playingNote === 1} />
+      <Tile color="#3d5a80" audioPath={"55"} pressing={playingNote === 2} />
+      <Tile color="#ffc7a2" audioPath={"56"} pressing={playingNote === 3} />
     </View>
   );
 }
