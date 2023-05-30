@@ -8,26 +8,36 @@ function getRandomNumber(min, max) {
 }
 
 const Tile = ({ color, audioPath, pressing = false, onClick }) => {
+  const [isPressing, setIsPressing] = useState(false);
+
   useEffect(() => {
     if (pressing) onPress();
   }, [pressing]);
 
   const onPress = async () => {
+    setIsPressing(true);
     const { sound } = await Audio.Sound.createAsync({
       uri: `https://www.musicca.com/lydfiler/piano/${audioPath}.mp3`,
     });
     await sound.playAsync();
   };
 
+  useEffect(() => {
+    setTimeout(() => {
+      setIsPressing(false);
+    }, 1000);
+  }, [isPressing]);
+
   return (
     <TouchableOpacity
-      activeOpacity={1}
+      activeOpacity={0.5}
       onPress={onPress}
       style={{
         width: "48%",
         height: "48%",
         backgroundColor: color,
         borderRadius: 10,
+        opacity: isPressing ? 1 : 0.5,
       }}
     >
       <Text> </Text>
@@ -64,10 +74,6 @@ export default function Game() {
       }, 300);
     }
   }, [isPlaying]);
-
-  useEffect(() => {
-    console.log("playingNote: " + playingNote);
-  }, [playingNote]);
 
   return (
     <View
